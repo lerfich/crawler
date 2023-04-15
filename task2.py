@@ -10,9 +10,9 @@ access_token = "vk1.a.kak7aByTPqIBYnAMBYSK3P1f5DHYf9YA2hL0Ftjo9vBNK6COY2v92Hyrzo
 ###### Вместо слова wordToSearch можно вставить любое слово, частоту которого ты хочешь узнать в последних countPostsToFetch постах
 wordToSearch = 'спбгу'
 countPostsToFetch = 20 #Максимум 100
+vk_group_id = '52298374' 
 
-
-get_spbu_vk_wall_url = f"https://api.vk.com/method/wall.get?v=5.131&owner_id=-52298374&count={countPostsToFetch}"
+get_spbu_vk_wall_url = f"https://api.vk.com/method/wall.get?v=5.131&owner_id=-{vk_group_id}&count={countPostsToFetch}"
 http = httplib2.Http()
 res = http.request(get_spbu_vk_wall_url, method='POST', 
                    headers={'Authorization': f'Bearer {access_token}'})
@@ -29,4 +29,4 @@ def AverageCountWordInDocument(docs, word):
     return sum(avgCount)/len(docs)  
 
 
-print(AverageCountWordInDocument(texts, wordToSearch))
+print(AverageCountWordInDocument(texts, wordToSearch), f'Частота употребления термина *{wordToSearch}* в последних {countPostsToFetch} постах оф. группы СПБГУ ВК')
