@@ -1,0 +1,9 @@
+https://oauth.vk.com/authorize?client_id=51615609&display=page&redirect_uri=https://oauth.vk.com/blank.html&scope=offline,wall,friends,groups,stats&response_type=token&v=5.131
+
+Чтобы получить client_id, нужно создать свое приложение вк (стендэлон) и заполнить там:
+
+1. адрес сайта: http://localhost
+2. базовый домен localhost
+3. openApi включен
+4. состояние: приложение включено и видно всем
+5. перейти по ссылке на первой строчке, вставив свой client_id (ID приложения)
