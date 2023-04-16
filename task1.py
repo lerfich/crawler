@@ -34,3 +34,4 @@ def parseTagsTexts(url, styles, tag):
 
 # print(parseTagsTexts(vkSpbuUrl, vkSpbuStyleClass, vkSpbuHtmlTag), '\n\n ############################## \n\n Предпоследний пост в группе Спбгу ВК (https://vk.com/spb1724)')
 print("Погода в Женеве сейчас: ", parseTagsTexts(urlDefault, styleClass, htmlTag))
+
