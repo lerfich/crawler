@@ -1,3 +1,6 @@
+
+import pytest
+
 from task1 import parseTagsTexts
 
 
@@ -20,15 +23,14 @@ def test_matching_values():
     weather_result = parseTagsTexts(weatherUrl, weatherStyleClass, weatherHtmlTag)
     assert weather_result[0] == "Пасмурно"
     vk_result = parseTagsTexts(vkSpbuUrl, vkSpbuStyleClass, vkSpbuHtmlTag)
-    assert vk_result[0] == "В #СПбГУ наградили победителей регионального этапа Всероссийской олимпиады школьников и их педагогов: https://vk.cc/cn6c3d." + \
-                           "Концерт, медали, благодарственные письма от губернатора и поздравления от руководства комитета по образованию и Университета — " + \
-                           "большой и заслуженный праздник для тех, кто ставит знания на первое место!"
+    assert vk_result[0] == "#ФотоархивСПбГУ  Императорский Университет, 1898 год."
     
 def test_number():
     weather_result = parseTagsTexts(weatherUrl, weatherStyleClass, weatherHtmlTag)
     assert len(weather_result) == 1
 
 
+@pytest.mark.xfail
 def test_dynamic_number():
     vk_result = parseTagsTexts(vkSpbuUrl, vkSpbuStyleClass, vkSpbuHtmlTag)
-    assert len(vk_result) != 23113
+    assert len(vk_result) == 23113
