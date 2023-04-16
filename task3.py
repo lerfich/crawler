@@ -1,14 +1,16 @@
 import httplib2
 from bs4 import BeautifulSoup
-import requests
-import vk_api
+import datetime
+import json
 from selenium import webdriver
 import httplib2
+import pandas as pd
+from collections import Counter
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 urlForWeb_1_0 = "https://spbu.ru"
-urlForWeb_2_0 = "https://spbu.ru"
-
 
 driver = webdriver.Chrome()
 driver.get(urlForWeb_1_0)
@@ -25,6 +27,7 @@ for link in soup.find_all('a', href=True):
 # print(f'Количество ссылок: {len(allClickableLinks)}')   
 
 
+
 externalLinksList = []
 for link in allClickableLinks:
     if ('spbu.ru' not in link and '//' in link):
@@ -33,8 +36,8 @@ for link in allClickableLinks:
 # print(f'Общее количество ссылок на внешние ресурсы: {len(externalLinksList)}')  ### НЕУНИКАЛЬНЫЕ
 # print(set(externalLinksList)) ### УНИКАЛЬНЫЕ
 # print(f'Общее количество уникальных ссылок на внешние ресурсы: {len(set(externalLinksList))}') ### УНИКАЛЬНЫЕ  
-#     
-# response = requests.get('http://www.example.com')
+
+
 
 def isPageNotFound(link):
     try:
@@ -50,8 +53,6 @@ def isPageNotFound(link):
         return False
     except:     
         return True
-
-
 #Не советую запускать без надобности - кроулер будет просматривать все 306 страниц (около 5 мин)
 # notWorkingLinks = []
 # allClickableValidLinks = []
@@ -68,6 +69,7 @@ def isPageNotFound(link):
 # print(f'Количество неработающих ссылок {len(notWorkingLinks)}')
 
 
+
 internalDomens = []
 for link in allClickableLinks:
     if ('spbu' in link and 'http' in link):
@@ -76,12 +78,79 @@ for link in allClickableLinks:
 # print(f'Количество уникальных внутренних поддоменов: {len(set(internalDomens))}')          
 
 
+
 filesLinksList = []
 for link in allClickableLinks:
     if ('.doc' in link or '.pdf' in link or '.docx' in link):
         filesLinksList.append(link)
 # print(set(filesLinksList))
 # print(f'Количество файлов .pdf, .doc или .docx: {len(set(filesLinksList))}')
+
+
+
+#сюда нужно вставить свой токен желательно, инструкуция в файле get_access
+access_token = "vk1.a.kak7aByTPqIBYnAMBYSK3P1f5DHYf9YA2hL0Ftjo9vBNK6COY2v92Hyrzo_GHgPjwUw_84n4Doi87ie2Zr4KI54ZODgqAzDPdht86I5fnF5fkfaQYAArjvk5LYcaer6cYVhtCSjANHtCN4iuaLzyErSBfxZQySEIUjyW40kIuzXBbtX6ehZDz-zY5w0WYf48Q-gjpTaUZeg7b_0_PPAyTg"
+
+vk_group_id = 59518047 #признавашки
+urlForWeb_2_0 = f"https://api.vk.com/method/wall.get?v=5.131&owner_id=-{vk_group_id}&count=100"
+http = httplib2.Http()
+res = http.request(urlForWeb_2_0, method='POST', 
+                   headers={'Authorization': f'Bearer {access_token}'})
+
+
+allPosts = json.loads(res[1])
+allPosts = allPosts['response']['items']
+
+
+
+def TimesWordMentioned(docs, word):
+    count = 0
+    for doc in docs:
+        if (doc.upper().count(word.upper())):
+            count += 1
+    return count
+allPostsTexts = [post['text'] for post in allPosts]
+print(f"Количество упоминаний слова Спбгу {TimesWordMentioned(allPostsTexts, 'спбгу')}")
+
+
+postAuthorsList = []
+for post in allPosts:
+    try:
+        # В признавашках только подпись есть, публикуется от имени сообщества (но не всегда она есть)
+        postAuthorsList.append(post['signer_id'])
+    except: 
+        postAuthorsList.append(post['from_id'])  
+print(f"Количество уникальных пользователей, публикующих контент {len(set(postAuthorsList))}")   
+
+
+configuredPosts = [{
+    'comments': post['comments']['count'],
+    'views': post['views']['count'],
+    'likes': post['likes']['count'],
+    'reposts': post['reposts']['count'],
+    } for post in allPosts]
+
+comments = 0
+views = 0
+likes = 0
+reposts = 0
+for post in configuredPosts:
+    comments += post['comments']
+    views += post['views']
+    likes += post['likes']
+    reposts += post['reposts']
+print(f"Статистика за последние 100 постов \n 'comments': {comments} \n 'views': {views} \n 'likes': {likes} \n 'reposts': {reposts}")   
+
+
+allPostsWithDates = []
+for post in allPosts:
+    allPostsWithDates.append(datetime.datetime.fromtimestamp(post['date']).day) #, 'text': post['text']})
+# print(allPostsWithDates)
+
+counter = Counter(allPostsWithDates)
+plt.bar(counter.keys(), counter.values())
+
+
 
 
 # Сбор статистики обработанных страниц для Веб 1.0: общее 
@@ -94,3 +163,5 @@ for link in allClickableLinks:
 # публикующих контент пользователей, количество 
 # лайков/просмотров/комментариев/репостов, график 
 # количество публикаций в день за собираемый период. 
+
+
