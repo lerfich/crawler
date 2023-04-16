@@ -9,15 +9,10 @@ from collections import Counter
 import matplotlib.pyplot as plt
 import numpy as np
 
+from vk_token import accessToken
 
 
-###################################
-###################################
-print('\n\n\n---------------Статистика SPBU.RU: ---------------\n')
-###################################
-###################################
-
-
+#WEB 1.0
 def getAllLinksFromWebsite():
     with open('./results/data.json') as json_file:
         data = json.load(json_file)
@@ -29,30 +24,15 @@ def getAllLinksFromWebsite():
     return allLinks
 
 
-urlForWeb_1_0 = "https://spbu.ru"
-
-driver = webdriver.Chrome()
-driver.get(urlForWeb_1_0)
-html = driver.page_source
-soup = BeautifulSoup(html, 'lxml')
-
-websiteAllLinks = getAllLinksFromWebsite()  # здесь я получаю вообще все ссылки через поиск в ширину
-allClickableLinks = []  # здесь я получаю все ссылки только с первой страницы
-for link in soup.find_all('a', href=True):
-    allClickableLinks.append(link['href'])
-
-def NumberOfPages():
+def NumberOfPages(soup, ):
     websiteAllLinks = getAllLinksFromWebsite()  # здесь я получаю вообще все ссылки через поиск в ширину
     allClickableLinks = []  # здесь я получаю все ссылки только с первой страницы
     for link in soup.find_all('a', href=True):
-        allClickableLinks.append(link['href'])
-    # print(allClickableLinks)
-    print(f'Общее количество страниц: {len(websiteAllLinks)}')   
+        allClickableLinks.append(link['href']) 
     return len(websiteAllLinks)
 
 
-
-def isPageNotFound(link):
+def isPageNotFound(link, driver):
     try:
         # response = requests.get(link)
         # return False
@@ -66,6 +46,8 @@ def isPageNotFound(link):
         return False
     except:     
         return True
+    
+
 #Не советую запускать без надобности - кроулер будет просматривать все 1600 страниц (около 25 мин)
 # def NumberOfErrorLinks():
 #     notWorkingLinks = []
@@ -84,59 +66,34 @@ def isPageNotFound(link):
 #     return len(notWorkingLinks)
 
 
-def NumberOfExternalLinks():
+def NumberOfExternalLinks(allClickableLinks):
     externalLinksList = []
     for link in allClickableLinks:
         if ('spbu.ru' not in link and '//' in link):
             externalLinksList.append(link) 
-    # print(externalLinksList) ### НЕУНИКАЛЬНЫЕ 
-    print(f'Общее количество ссылок на внешние ресурсы: {len(externalLinksList)}')  ### НЕУНИКАЛЬНЫЕ
-    # print(set(externalLinksList)) ### УНИКАЛЬНЫЕ
-    print(f'Общее количество уникальных ссылок на внешние ресурсы: {len(set(externalLinksList))}') ### УНИКАЛЬНЫЕ  
     return len(externalLinksList), len(set(externalLinksList))
 
 
-def NumberOfInternalSubDomensLinks():
+def NumberOfInternalSubDomensLinks(allClickableLinks):
     internalDomens = []
     for link in allClickableLinks:
         if ('spbu' in link and 'http' in link):
-            internalDomens.append(link.split('.ru')[0] + '.ru')
-    # print(internalDomens)
-    print(f'Количество уникальных внутренних поддоменов: {len(set(internalDomens))}')      
+            internalDomens.append(link.split('.ru')[0] + '.ru')    
+    print(internalDomens)
     return len(set(internalDomens))
 
 
-def NumberOfDownloadableLinks():
+def NumberOfDownloadableLinks(websiteAllLinks):
     filesLinksList = []
     for link in websiteAllLinks:
-        if ('.doc' in link or '.pdf' in link or '.docx' in link):
+        if ('.doc' in link[-5:] or '.pdf' in link[-5:] or '.docx' in link[-5:]):
             filesLinksList.append(link)
-    # print(set(filesLinksList))
-    print(f'Количество файлов .pdf, .doc или .docx: {len(set(filesLinksList))}')
+    print(filesLinksList)
     return len(set(filesLinksList))
 
 
-###################################
-###################################
-print('\n\n---------------Статистика ВК: ---------------\n')
-###################################
-###################################
-
-#сюда нужно вставить свой токен желательно, инструкуция в файле get_access
-access_token = "vk1.a.ka7aByTPqIBYnAMBYSK3P1f5DHYf9YA2hL0Ftjo9vBNK6COY2v92Hyrzo_GHgPjwUw_84n4Doi87ie2Zr4KI54ZODgqAzDPdht86I5fnF5fkfaQYAArjvk5LYcaer6cYVhtCSjANHtCN4iuaLzyErSBfxZQySEIUjyW40kIuzXBbtX6ehZDz-zY5w0WYf48Q-gjpTaUZeg7b_0_PPAyTg"
-
-vk_group_id = 59518047 #признавашки
-urlForWeb_2_0 = f"https://api.vk.com/method/wall.get?v=5.131&owner_id=-{vk_group_id}&count=100"
-http = httplib2.Http()
-res = http.request(urlForWeb_2_0, method='POST', 
-                headers={'Authorization': f'Bearer {access_token}'})
-
-
-allPosts = json.loads(res[1])
-allPosts = allPosts['response']['items']
-
-
-def WordMentions():
+#WEB 2.0
+def WordMentions(allPosts):
     def TimesWordMentioned(docs, word):
         count = 0
         for doc in docs:
@@ -144,10 +101,10 @@ def WordMentions():
                 count += 1
         return count
     allPostsTexts = [post['text'] for post in allPosts]
-    print(f"Количество упоминаний слова Спбгу {TimesWordMentioned(allPostsTexts, 'спбгу')}")
     return TimesWordMentioned(allPostsTexts, 'спбгу')
 
-def NumberOfUniquePublishers():
+
+def NumberOfUniquePublishers(allPosts):
     postAuthorsList = []
     for post in allPosts:
         try:
@@ -155,10 +112,10 @@ def NumberOfUniquePublishers():
             postAuthorsList.append(post['signer_id'])
         except: 
             postAuthorsList.append(post['from_id'])  
-    print(f"Количество уникальных пользователей, публикующих контент {len(set(postAuthorsList))}")  
     return len(set(postAuthorsList))
 
-def ReactionsStatistics():
+
+def ReactionsStatistics(allPosts):
     configuredPosts = [{
         'comments': post['comments']['count'],
         'views': post['views']['count'],
@@ -174,12 +131,11 @@ def ReactionsStatistics():
         comments += post['comments']
         views += post['views']
         likes += post['likes']
-        reposts += post['reposts']
-    print(f"Статистика за последние 100 постов \n 'comments': {comments} \n 'views': {views} \n 'likes': {likes} \n 'reposts': {reposts}")   
+        reposts += post['reposts']  
     return comments, views, likes, reposts
 
 
-def PostsFrequencyGraph():
+def PostsFrequencyGraph(allPosts):
     allPostsWithDates = []
     for post in allPosts:
         allPostsWithDates.append(datetime.datetime.fromtimestamp(post['date']).strftime("%Y/%m/%d")) #, 'text': post['text']})
@@ -196,9 +152,6 @@ def PostsFrequencyGraph():
     return
 
 
-
-
-
 # Сбор статистики обработанных страниц для Веб 1.0: общее 
 # количество страниц и всех ссылок, количество внутренних
 # страниц, количество неработающих страниц, количество внутренних
@@ -210,15 +163,54 @@ def PostsFrequencyGraph():
 # лайков/просмотров/комментариев/репостов, график 
 # количество публикаций в день за собираемый период. 
 
-#WEB 1.0
-NumberOfPages()
-# NumberOfErrorLinks() #работает около 5 минут, проходит по всем страницам
-NumberOfExternalLinks()
-NumberOfInternalSubDomensLinks()
-NumberOfDownloadableLinks()
 
-#WEB 2.0
-WordMentions()
-NumberOfUniquePublishers()
-ReactionsStatistics()
-PostsFrequencyGraph()
+# Статистика SPBU.RU
+def stats_web1():
+    urlForWeb_1_0 = "https://spbu.ru"
+
+    driver = webdriver.Chrome()
+    driver.get(urlForWeb_1_0)
+    html = driver.page_source
+    soup = BeautifulSoup(html, 'lxml')
+
+    websiteAllLinks = getAllLinksFromWebsite()  # здесь я получаю вообще все ссылки через поиск в ширину
+    allClickableLinks = []  # здесь я получаю все ссылки только с первой страницы
+    for link in soup.find_all('a', href=True):
+        allClickableLinks.append(link['href'])
+
+    #WEB 1.0
+    # NumberOfPages(soup)
+    print(f'Общее количество страниц: {NumberOfPages(soup)}')   
+    # NumberOfErrorLinks() #работает около 5 минут, проходит по всем страницам
+    external_non_unique, exetranl_unique = NumberOfExternalLinks(allClickableLinks)
+    print(f'Общее количество ссылок на внешние ресурсы: {external_non_unique}') ### НЕУНИКАЛЬНЫЕ  
+    print(f'Общее количество уникальных ссылок на внешние ресурсы: {exetranl_unique}') ### УНИКАЛЬНЫЕ 
+    # NumberOfInternalSubDomensLinks(allClickableLinks)
+    print(f'Количество уникальных внутренних поддоменов: {NumberOfInternalSubDomensLinks(allClickableLinks)}') 
+    # NumberOfDownloadableLinks(websiteAllLinks)
+    print(f'Количество файлов .pdf, .doc или .docx: {NumberOfDownloadableLinks(websiteAllLinks)}')
+
+
+# Статистика ВК
+def stats_web2():
+    vk_group_id = 59518047 #признавашки
+    urlForWeb_2_0 = f"https://api.vk.com/method/wall.get?v=5.131&owner_id=-{vk_group_id}&count=100"
+    http = httplib2.Http()
+    res = http.request(urlForWeb_2_0, method='POST', 
+                    headers={'Authorization': f'Bearer {accessToken}'})
+
+    allPosts = json.loads(res[1])
+    allPosts = allPosts['response']['items']
+    #WEB 2.0
+    print(allPosts[0])
+    # WordMentions(allPosts)
+    print(f"Количество упоминаний слова Спбгу {WordMentions(allPosts)}")
+    # NumberOfUniquePublishers(allPosts)
+    print(f"Количество уникальных пользователей, публикующих контент {NumberOfUniquePublishers(allPosts)}")  
+    comments, views, likes, reposts = ReactionsStatistics(allPosts)
+    print(f"Статистика за последние 100 постов \n 'comments': {comments} \n 'views': {views} \n 'likes': {likes} \n 'reposts': {reposts}")
+    # PostsFrequencyGraph(allPosts)
+
+
+if __name__ == "__main__":
+    stats_web1()
