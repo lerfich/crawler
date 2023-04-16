@@ -4,6 +4,8 @@ from vk_token import accessToken
 
 
 def averageCountWordInDocument(docs, word):
+    if len(docs) == 0:
+        return 0
     avgCount = []
     for doc in docs:
         avgCount.append(doc.upper().count(word.upper()))
