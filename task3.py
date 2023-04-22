@@ -4,10 +4,7 @@ import datetime
 import json
 from selenium import webdriver
 import httplib2
-import pandas as pd
-from collections import Counter
 import matplotlib.pyplot as plt
-import numpy as np
 
 
 
@@ -123,7 +120,7 @@ print('\n\n---------------Статистика ВК: ---------------\n')
 ###################################
 
 #сюда нужно вставить свой токен желательно, инструкуция в файле get_access
-access_token = "vk1.a.ka7aByTPqIBYnAMBYSK3P1f5DHYf9YA2hL0Ftjo9vBNK6COY2v92Hyrzo_GHgPjwUw_84n4Doi87ie2Zr4KI54ZODgqAzDPdht86I5fnF5fkfaQYAArjvk5LYcaer6cYVhtCSjANHtCN4iuaLzyErSBfxZQySEIUjyW40kIuzXBbtX6ehZDz-zY5w0WYf48Q-gjpTaUZeg7b_0_PPAyTg"
+access_token = "vk1.a.kak7aByTPqIBYnAMBYSK3P1f5DHYf9YA2hL0Ftjo9vBNK6COY2v92Hyrzo_GHgPjwUw_84n4Doi87ie2Zr4KI54ZODgqAzDPdht86I5fnF5fkfaQYAArjvk5LYcaer6cYVhtCSjANHtCN4iuaLzyErSBfxZQySEIUjyW40kIuzXBbtX6ehZDz-zY5w0WYf48Q-gjpTaUZeg7b_0_PPAyTg"
 
 vk_group_id = 59518047 #признавашки
 urlForWeb_2_0 = f"https://api.vk.com/method/wall.get?v=5.131&owner_id=-{vk_group_id}&count=100"
@@ -190,8 +187,8 @@ def PostsFrequencyGraph():
         else:
             counter[date] = 1  
     plt.plot(counter.keys(), counter.values())
-    plt.title('График количество публикаций в день за собираемый период')
-    plt.xticks(rotation=70)
+    plt.title('Частота публикаций за собираемый период', fontsize=15, color="blue")
+    plt.xticks(rotation=45)
     plt.show()
     return
 
@@ -211,11 +208,11 @@ def PostsFrequencyGraph():
 # количество публикаций в день за собираемый период. 
 
 #WEB 1.0
-NumberOfPages()
-# NumberOfErrorLinks() #работает около 5 минут, проходит по всем страницам
-NumberOfExternalLinks()
-NumberOfInternalSubDomensLinks()
-NumberOfDownloadableLinks()
+# NumberOfPages()
+# # NumberOfErrorLinks() #работает около 5 минут, проходит по всем страницам
+# NumberOfExternalLinks()
+# NumberOfInternalSubDomensLinks()
+# NumberOfDownloadableLinks()
 
 #WEB 2.0
 WordMentions()

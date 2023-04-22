@@ -28,8 +28,6 @@ def parseTagsTexts(url, styles, tag):
     soup = BeautifulSoup(html, 'lxml')
 
     tags = soup.findAll(tag, styles)
-    # for tag in tags:
-        # print(tag.text)
     return tags[1].text
 
 # print(parseTagsTexts(vkSpbuUrl, vkSpbuStyleClass, vkSpbuHtmlTag), '\n\n ############################## \n\n Предпоследний пост в группе Спбгу ВК (https://vk.com/spb1724)')
